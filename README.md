@@ -23,3 +23,7 @@ Team:
 #### Hema Sree Rathnam Machha
  - [Link to Wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Hema-Sree-Rathnam-Machha)
  - [Link to readme folder](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Hema%20Sree/README.md)
+
+#### Vyshnavi Tadipaneni
+ - [Link to my Wiki page](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Vyshnavi-Tadipaneni)
+ - [Link to my README.md](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Vyshnavi/README.md)
