@@ -11,4 +11,5 @@ Team:
  ## Wiki Pages and Folder Links
 
  #### Giridhar Addagalla
-  [Link to Folder readme]()
+  [Link to Folder readme](https://github.com/vyshnavi1996/Beam-Dataproc-Java/tree/main/Giridhar)
+  [Link to the wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Giridhar-Addagalla)
