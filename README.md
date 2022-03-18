@@ -26,4 +26,4 @@ Team:
 
 #### Vyshnavi Tadipaneni
  - [Link to my Wiki page](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Vyshnavi-Tadipaneni)
- - [Link to my README.md](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Vyshnavi/README.md)
+ - [Link to my README.md](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Vyshnavi)
