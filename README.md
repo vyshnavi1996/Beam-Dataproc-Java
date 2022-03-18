@@ -13,3 +13,6 @@ Team:
  #### Giridhar Addagalla
   [Link to Folder readme](https://github.com/vyshnavi1996/Beam-Dataproc-Java/tree/main/Giridhar)
   [Link to the wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Giridhar-Addagalla)
+
+ #### Alekya Billakanti
+  [Link to the Wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Alekya-Billakanti)
