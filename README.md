@@ -15,7 +15,8 @@ Team:
   - [Link to the wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Giridhar-Addagalla)
 
  #### Alekya Billakanti
-  [Link to the Wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Alekya-Billakanti)
+ -[Link to the Wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Alekya-Billakanti)
+ -[Link to my README](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Alekya/README.md)
   
  #### Manoj Nuvvala
  - [Manoj Wiki](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Manoj-Nuvvala)
@@ -30,3 +31,4 @@ Team:
 
 #### Himaja Parachuri
 - [Link to my Wiki page](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Himaja-Parachuri)
+- [Link to my README.md](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Himaja/README.md)
