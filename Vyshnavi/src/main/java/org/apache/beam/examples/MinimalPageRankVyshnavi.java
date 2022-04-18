@@ -21,6 +21,48 @@ import org.apache.beam.sdk.values.TypeDescriptors;
 
 public class MinimalPageRankVyshnavi {
 
+  static class Job1Finalizer extends DoFn<KV<String, Iterable<String>>, KV<String, RankedPage>> {
+    @ProcessElement
+    public void processElement(@Element KV<String, Iterable<String>> element,
+        OutputReceiver<KV<String, RankedPage>> receiver) {
+      Integer contributorVotes = 0;
+      if (element.getValue() instanceof Collection) {
+        contributorVotes = ((Collection<String>) element.getValue()).size();
+      }
+      ArrayList<VotingPage> voters = new ArrayList<VotingPage>();
+      for (String voterName : element.getValue()) {
+        if (!voterName.isEmpty()) {
+          voters.add(new VotingPage(voterName, contributorVotes));
+        }
+      }
+      receiver.output(KV.of(element.getKey(), new RankedPage(element.getKey(), voters)));
+    }
+  }
+
+
+
+  private static PCollection<KV<String, RankedPage>> runJob2Iteration(
+      PCollection<KV<String, RankedPage>> kvReducedPairs) {
+    PCollection<KV<String, RankedPage>> mappedKVs = kvReducedPairs.apply(ParDo.of(new Job2Mapper()));
+
+    // KV{README.md, README.md, 1.00000, 0, [java.md, 1.00000,1]}
+    // KV{README.md, README.md, 1.00000, 0, [go.md, 1.00000,1]}
+    // KV{java.md, java.md, 1.00000, 0, [README.md, 1.00000,3]}
+
+    PCollection<KV<String, Iterable<RankedPage>>> reducedKVs = mappedKVs
+        .apply(GroupByKey.<String, RankedPage>create());
+
+    // KV{java.md, [java.md, 1.00000, 0, [README.md, 1.00000,3]]}
+    // KV{README.md, [README.md, 1.00000, 0, [python.md, 1.00000,1], README.md,
+    // 1.00000, 0, [java.md, 1.00000,1], README.md, 1.00000, 0, [go.md, 1.00000,1]]}
+
+    PCollection<KV<String, RankedPage>> updatedOutput = reducedKVs.apply(ParDo.of(new Job2Updater()));
+
+    // KV{README.md, README.md, 2.70000, 0, [java.md, 1.00000,1, go.md, 1.00000,1,
+    // python.md, 1.00000,1]}
+    // KV{python.md, python.md, 0.43333, 0, [README.md, 1.00000,3]}
+    return updatedOutput;
+  }
   public static void main(String[] args) {
 
     PipelineOptions options = PipelineOptionsFactory.create();
