@@ -1,4 +1,4 @@
-package org.edu.nwmissouri.sec-03group-06;
+package org.edu.nwmissouri.sec03-group-06;
 
 public class RankedPage{
     
