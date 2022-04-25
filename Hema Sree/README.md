@@ -13,7 +13,7 @@
          
          
  ### Executing a project.
-          mvn compile exec:java -D exec.mainClass=org.edu.nwmissouri.sec03-group-06.MinimalPageRankVyshnavi 
+          mvn compile exec:java -D exec.mainClass=org.edu.nwmissouri.sec03-group-06.MinimalPageRankMachha
 
        
   ### Links : 
