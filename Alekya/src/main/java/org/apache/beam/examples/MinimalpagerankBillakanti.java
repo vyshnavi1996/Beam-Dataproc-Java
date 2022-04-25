@@ -1,3 +1,4 @@
+
 package org.apache.beam.examples;
 import java.util.Arrays;
 import org.apache.beam.sdk.Pipeline;
@@ -5,7 +6,6 @@ import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.Count;
-import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.Filter;
 import org.apache.beam.sdk.transforms.FlatMapElements;
 import org.apache.beam.sdk.transforms.Flatten;
@@ -16,7 +16,26 @@ import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.sdk.values.TypeDescriptors;
 
+
+
 public class MinimalPageRankBillakanti {
+  // DEFINE DOFNS
+  // ==================================================================
+  // You can make your pipeline assembly code less verbose by defining
+  // your DoFns statically out-of-line.
+  // Each DoFn<InputT, OutputT> takes previous output
+  // as input of type InputT
+  // and transforms it to OutputT.
+  // We pass this DoFn to a ParDo in our pipeline.
+
+  /**
+   * DoFn Job1Finalizer takes KV(String, String List of outlinks) and transforms
+   * the value into our custom RankedPage Value holding the page's rank and list
+   * of voters.
+   * 
+   * The output of the Job1 Finalizer creates the initial input into our
+   * iterative Job 2.
+   */
   static class Job1Finalizer extends DoFn<KV<String, Iterable<String>>, KV<String, RankedPage>> {
     @ProcessElement
     public void processElement(@Element KV<String, Iterable<String>> element,
@@ -34,45 +53,52 @@ public class MinimalPageRankBillakanti {
       receiver.output(KV.of(element.getKey(), new RankedPage(element.getKey(), voters)));
     }
   }
-
   public static void main(String[] args) {
 
     PipelineOptions options = PipelineOptionsFactory.create();
     Pipeline p = Pipeline.create(options);
-    String dataFolder = "web04";
-    String dataFile = "go.md";
-    PCollection<KV<String, String>> pcol1 = BillakantiMapper(p, dataFolder, "go.md");
-    PCollection<KV<String, String>> pcol2 = BillakantiMapper(p, dataFolder, "python.md");
-    PCollection<KV<String, String>> pcol3 = BillakantiMapper(p, dataFolder, "java.md");
-    PCollection<KV<String, String>> pcol4 = BillakantiMapper(p, dataFolder, "README.md");
 
-    PCollectionList<KV<String, String>> pcolList = PCollectionList.of(pcol1).and(pcol2).and(pcol3).and(pcol4);
+    String folder="web04";
 
-    PCollection<KV<String, String>> mergedList = pcolList.apply(Flatten.<KV<String, String>>pCollections());
-    PCollection<String> pLinksStr = mergedList.apply(
-        MapElements.into(
-            TypeDescriptors.strings())
-            .via((mergeOut) -> mergeOut.toString()));
+      // .apply(Filter.by((String line) -> !line.isEmpty()))    
+      // .apply(Filter.by((String line) -> !line.equals(" ")))
+    PCollection<KV<String, String>> pcollection1 = BillakantiMapper1(p,"go.md",folder);
+    PCollection<KV<String, String>> pcollection2 = BillakantiMapper1(p,"java.md",folder);
+    PCollection<KV<String, String>> pcollection3 = BillakantiMapper1(p,"python.md",folder);
+    PCollection<KV<String, String>> pcollection4 = BillakantiMapper1(p,"README.md",folder);
+    PCollectionList<KV<String, String>
+    > PCollection_KV_pairs = PCollectionList.of(pcollection1).and(pcollection2).and(pcollection3).and(pcollection4);
 
-    pLinksStr.apply(TextIO.write().to("Billakanti_out"));
+    PCollection<KV<String, String>> myMergedList = PCollection_KV_pairs.apply(Flatten.<KV<String,String>>pCollections());
+
+    PCollection<String> PCollectionLinksString =  myMergedList.apply(
+      MapElements.into(  
+        TypeDescriptors.strings())
+          .via((myMergeLstout) -> myMergeLstout.toString()));
+
+
+        
+        PCollectionLinksString.apply(TextIO.write().to("BillakantiPR"));
 
     p.run().waitUntilFinish();
   }
+    private static PCollection<KV<String, String>> BillakantiMapper1(Pipeline p, String dataFile, String dataFolder) {
+    String dataPath = dataFolder + "/" + dataFile;
+    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
+    PCollection<String> pcolLines  =pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
+    PCollection<String> pcColInputEmptyLines=pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
+    PCollection<String> pcolInputLinkLines=pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
+   
+    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
+            MapElements.into(TypeDescriptors.strings())
+                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
 
-  private static PCollection<KV<String, String>> BillakantiMapper(Pipeline p, String dataFolder, String dataFile) {
-    String dataLocation = dataFolder + "/" + dataFile;
-    PCollection<String> pcolInputLines = p.apply(TextIO.read().from(dataLocation));
-
-    PCollection<String> pcolLinkLines = pcolInputLines.apply(Filter.by((String line) -> line.startsWith("[")));
-    PCollection<String> pcolLinkPages = pcolLinkLines.apply(MapElements.into(TypeDescriptors.strings())
-        .via(
-            (String linkline) -> linkline.substring(linkline.indexOf("(") + 1, linkline.length() - 1)));
-    PCollection<KV<String, String>> pcolKVpairs = pcolLinkPages.apply(MapElements
-        .into(
-            TypeDescriptors.kvs(
-                TypeDescriptors.strings(), TypeDescriptors.strings()))
-        .via(outlink -> KV.of(dataFile, outlink)));
-    return pcolKVpairs;
-
+                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
+                  MapElements.into(  
+                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
+                      .via (linkline ->  KV.of(dataFile , linkline) ));
+     
+                   
+    return pcollectionkvLinks;
   }
 }
