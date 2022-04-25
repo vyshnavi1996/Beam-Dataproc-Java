@@ -100,7 +100,7 @@ public class MinimalPageRankParachuri {
 
     p.run().waitUntilFinish();
   }
-    private static PCollection<KV<String, String>> vyshnaviMapper1(Pipeline p, String dataFile, String dataFolder) {
+    private static PCollection<KV<String, String>> ParachuriMapper1(Pipeline p, String dataFile, String dataFolder) {
     String dataPath = dataFolder + "/" + dataFile;
     PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
     PCollection<String> pcolLines  =pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
