@@ -1,5 +1,5 @@
 
-package org.edu.nwmissouri.sec-03group-06;
+package org.edu.nwmissouri.sec03-group-06;
 
 import java.util.Arrays;
 import org.apache.beam.sdk.Pipeline;
@@ -54,11 +54,6 @@ public class MinimalPageRankVyshnavi {
       receiver.output(KV.of(element.getKey(), new RankedPage(element.getKey(), voters)));
     }
   }
-
-<<<<<<< HEAD:Vyshnavi/src/main/java/org/edu/nwmissouri/sec03-group-06/MinimalPageRankVyshnavi.java
-=======
-
->>>>>>> 27047217f1d98c667d9f6796871fa0fb2ad52c06:Vyshnavi/src/main/java/org/apache/beam/examples/MinimalPageRankVyshnavi.java
   public static void main(String[] args) {
 
     PipelineOptions options = PipelineOptionsFactory.create();
