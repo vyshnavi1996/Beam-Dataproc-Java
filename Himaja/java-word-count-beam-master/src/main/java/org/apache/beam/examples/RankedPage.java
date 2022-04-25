@@ -1,4 +1,4 @@
-package org.edu.nwmissouri.sec03-group-06;
+package org.apache.beam.examples;
 
 public class RankedPage{
     

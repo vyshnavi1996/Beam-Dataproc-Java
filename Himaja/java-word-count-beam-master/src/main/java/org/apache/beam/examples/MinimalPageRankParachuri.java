@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.edu.nwmissouri.sec03-group-06;
+package org.apache.beam.examples;
 
 import java.util.Arrays;
 import org.apache.beam.sdk.Pipeline;
