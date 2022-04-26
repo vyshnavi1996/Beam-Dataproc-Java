@@ -15,11 +15,11 @@
          
          
  ### Executing a project.
-          mvn compile exec:java -D exec.mainClass=org.edu.nwmissouri.sec03-group-06.MinimalPageRankVyshnavi 
+          mvn compile exec:java -D exec.mainClass=org.edu.nwmissouri.vyshnavi.MinimalPageRankVyshnavi 
 
      
        
   ### Links : 
 - [Link to my Wiki page](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Vyshnavi-Tadipaneni)
 - [Link to  my folder](https://github.com/vyshnavi1996/Beam-Dataproc-Java/tree/main/Vyshnavi)
-- [Link to commmits](https://github.com/vyshnavi1996/Beam-Dataproc-Java/commits/main)
+- [Link to commits](https://github.com/vyshnavi1996/Beam-Dataproc-Java/commits/main)
