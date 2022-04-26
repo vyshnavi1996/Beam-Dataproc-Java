@@ -162,7 +162,7 @@ public class MinimalPageRankVyshnavi {
     // Convert to a custom Value object (RankedPage) in preparation for Job 2
     PCollection<KV<String, RankedPageVyshnavi>> job2in = kvStringReducedPairs.apply(ParDo.of(new Job1Finalizer()));
     PCollection<KV<String, RankedPageVyshnavi>> job2out = null; 
-    int iterations = 50;
+    int iterations = 20;
     for (int i = 1; i <= iterations; i++) {
       job2out= runJob2Iteration(job2in);
       job2in =job2out;
