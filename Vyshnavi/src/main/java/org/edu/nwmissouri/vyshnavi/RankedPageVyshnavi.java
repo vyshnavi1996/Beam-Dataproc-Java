@@ -3,16 +3,16 @@ package org.edu.nwmissouri.vyshnavi;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class RankedPage implements Serializable{
+public class RankedPageVyshnavi implements Serializable{
     String name = "unknown.md";
     Double rank = 1.000;
-    ArrayList<VotingPage> voters = new ArrayList<VotingPage>();
+    ArrayList<VotingPageVyshnavi> voters = new ArrayList<VotingPageVyshnavi>();
     /**
      * 
      * @param nameIn this page name
      * @param votersIn arraylist of pages pointing to this page
      */
-    public RankedPage(String nameIn, ArrayList<VotingPage> votersIn) {
+    public RankedPageVyshnavi(String nameIn, ArrayList<VotingPageVyshnavi> votersIn) {
         this.name = nameIn;
         this.voters = votersIn;
     }
@@ -22,7 +22,7 @@ public class RankedPage implements Serializable{
      * @param rankIn this page's rank
      * @param votersIn array list of pages pointing to this page
      */
-    public RankedPage(String nameIn,Double rankIn, ArrayList<VotingPage> votersIn) {
+    public RankedPageVyshnavi(String nameIn,Double rankIn, ArrayList<VotingPageVyshnavi> votersIn) {
         this.name = nameIn;
         this.rank= rankIn;
         this.voters = votersIn;
@@ -37,10 +37,10 @@ public class RankedPage implements Serializable{
         return rank;
 
     }
-    public  ArrayList<VotingPage> getVoters(){
+    public  ArrayList<VotingPageVyshnavi> getVoters(){
         return this.voters;
     }
-    public  void setVoters(ArrayList<VotingPage> voters){
+    public  void setVoters(ArrayList<VotingPageVyshnavi> voters){
         this.voters = voters;
     }
 @Override

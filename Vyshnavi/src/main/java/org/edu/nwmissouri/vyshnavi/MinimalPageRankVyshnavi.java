@@ -21,7 +21,7 @@ import org.apache.beam.sdk.values.TypeDescriptors;
 
 
 public class MinimalPageRankVyshnavi {
-  // DEFINE DOFNS
+   // DEFINE DOFNS
   // ==================================================================
   // You can make your pipeline assembly code less verbose by defining
   // your DoFns statically out-of-line.
@@ -38,110 +38,74 @@ public class MinimalPageRankVyshnavi {
    * The output of the Job1 Finalizer creates the initial input into our
    * iterative Job 2.
    */
-    static class Job1Finalizer extends DoFn<KV<String, Iterable<String>>, KV<String, RankedPage>> {
+  static class Job1Finalizer extends DoFn<KV<String, Iterable<String>>, KV<String, RankedPageVyshnavi>> {
     @ProcessElement
     public void processElement(@Element KV<String, Iterable<String>> element,
-        OutputReceiver<KV<String, RankedPage>> receiver) {
+        OutputReceiver<KV<String, RankedPageVyshnavi>> receiver) {
       Integer contributorVotes = 0;
       if (element.getValue() instanceof Collection) {
         contributorVotes = ((Collection<String>) element.getValue()).size();
       }
-      ArrayList<VotingPage> voters = new ArrayList<VotingPage>();
+      ArrayList<VotingPageVyshnavi> voters = new ArrayList<VotingPageVyshnavi>();
       for (String voterName : element.getValue()) {
         if (!voterName.isEmpty()) {
-          voters.add(new VotingPage(voterName, contributorVotes));
+          voters.add(new VotingPageVyshnavi(voterName, contributorVotes));
         }
       }
-      receiver.output(KV.of(element.getKey(), new RankedPage(element.getKey(), voters)));
+      receiver.output(KV.of(element.getKey(), new RankedPageVyshnavi(element.getKey(), voters)));
     }
   }
-
-  // JOB2 MAPPER
- static class Job2Mapper extends DoFn<KV<String,RankedPage>, KV<String, RankedPage>> {
+  // JOB2 Mapper
+  static class Job2Mapper extends DoFn<KV<String,RankedPageVyshnavi >, KV<String, RankedPageVyshnavi>> {
   @ProcessElement
-  public void processElement(@Element KV<String, RankedPage> element,
-      OutputReceiver<KV<String, RankedPage>> receiver) {
-        // set Integer votes to 0
+  public void processElement(@Element KV<String, RankedPageVyshnavi> element,
+      OutputReceiver<KV<String, RankedPageVyshnavi>> receiver) {
+
     Integer votes = 0;
-      // create ArrayList<VotingPage> named voters and set to element getValue() (a RankedPage) and call getVoters()
-      ArrayList<VotingPage> voters =  element.getValue().getVoters();
-      // if voters instanceof Collection then
+     
+      ArrayList<VotingPageVyshnavi> voters =  element.getValue().getVoters();
+
       if ( voters instanceof Collection){
-    // set votes to ((Collection<VotingPage>) voters).size()
-    votes =((Collection<VotingPage>)voters).size();
-    //end if
+
+    votes =((Collection<VotingPageVyshnavi>)voters).size();
+
     }
-    // for (VotingPage vp : voters) {
-    for (VotingPage vp: voters){
+    for (VotingPageVyshnavi vp: voters){
       String pageName = vp.getName();
       Double pageRank = vp.getRank();
       String contributorPageName= element.getKey();
       Double contributorPageRank= element.getValue().getRank();
-      VotingPage contributor = new VotingPage(contributorPageName,contributorPageRank,votes);
-      ArrayList<VotingPage> arr = new ArrayList<VotingPage>();
+      VotingPageVyshnavi contributor = new VotingPageVyshnavi(contributorPageName,contributorPageRank,votes);
+      ArrayList<VotingPageVyshnavi> arr = new ArrayList<VotingPageVyshnavi>();
       arr.add(contributor);
-      receiver.output(KV.of(vp.getName(), new RankedPage(pageName,pageRank,arr)));
+      receiver.output(KV.of(vp.getName(), new RankedPageVyshnavi(pageName,pageRank,arr)));
     }
   }
- 
-
   }
-  // HELPER FUNCTIONS
-  public static  void deleteFiles(){
-    final File file = new File("./");
-    for (File f : file.listFiles()){
-     if(f.getName().startsWith("VyshnaviPR")){
-    f.delete();
-    }
-     }
-   }
-   // JOB2 UPDATER
- static class Job2Updater extends DoFn<KV<String, Iterable<RankedPage>>, KV<String, RankedPage>> {
+  // JOB2 UPDATER
+  static class Job2Updater extends DoFn<KV<String, Iterable<RankedPageVyshnavi>>, KV<String, RankedPageVyshnavi>> {
   @ProcessElement
-  public void processElement(@Element KV<String, Iterable<RankedPage>> element,
-    OutputReceiver<KV<String, RankedPage>> receiver) {
-      //Double dampingFactor = 0.85
-      Double dampingFactor = 0.85;
-      //Double updatedRank = (1 - dampingFactor) to start
-      Double updatedRank = (1 - dampingFactor);
-      //Create a  new array list for newVoters
-      ArrayList<VotingPage> newVoters = new ArrayList<>();
-      //For each pg in rankedPages, if pg isn't null, for each vp in pg.getVoters()
-      for(RankedPage pg:element.getValue()){
-        if (pg != null) {
-          for(VotingPage vp:pg.getVoters()){
-            newVoters.add(vp);
-            updatedRank += (dampingFactor) * vp.getRank() / (double)vp.getVotes();
+  public void processElement(@Element KV<String, Iterable<RankedPageVyshnavi>> element,
+      OutputReceiver<KV<String, RankedPageVyshnavi>> receiver) {
+    
+        String thisPage = element.getKey();
+        Iterable<RankedPageVyshnavi> rankedPage = element.getValue();
+        Double dampfactor = 0.85;
+        Double updateRank = (1.0 -dampfactor);
+        ArrayList<VotingPageVyshnavi> newVoters = new ArrayList<VotingPageVyshnavi>();
 
-          }
+      for (RankedPageVyshnavi pg:rankedPage) {
+      if (pg!=null) {
+        for(VotingPageVyshnavi vp :pg.getVoters()){
+          newVoters.add(vp);
+          updateRank +=(dampfactor)*vp.getRank()/(double)vp.getVotes();
         }
       }
-      receiver.output(KV.of(element.getKey(),new RankedPage(element.getKey(), updatedRank, newVoters)));
-
-  }
-}
-
-   // Map to KV pairs
-  private static PCollection<KV<String, String>> vyshnaviMapper1(Pipeline p, String dataFile, String dataFolder) {
-    String dataPath = dataFolder + "/" + dataFile;
-    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
-    PCollection<String> pcolLines  =pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
-    PCollection<String> pcColInputEmptyLines=pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
-    PCollection<String> pcolInputLinkLines=pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
-   
-    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
-            MapElements.into(TypeDescriptors.strings())
-                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
-
-                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
-                  MapElements.into(  
-                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
-                      .via (linkline ->  KV.of(dataFile , linkline) ));
-     
-                   
-    return pcollectionkvLinks;
-  }
- /**
+    }
+    receiver.output(KV.of(thisPage, new RankedPageVyshnavi(thisPage,updateRank,newVoters)));
+  } 
+}  
+/**
    * Run one iteration of the Job 2 Map-Reduce process
    * Notice how the Input Type to Job 2.
    * Matches the Output Type from Job 2.
@@ -151,23 +115,22 @@ public class MinimalPageRankVyshnavi {
    *                       initial ranks.
    * @return - returns a PCollection<KV<String, RankedPage>> with updated ranks.
    */
- private static PCollection<KV<String, RankedPage>> runJob2Iteration(
-      PCollection<KV<String, RankedPage>> kvReducedPairs) {
-     PCollection<KV<String, RankedPage>> mappedKVs = kvReducedPairs.apply(ParDo.of(new Job2Mapper()));
-   // apply(ParDo.of(new Job2Mapper()));
+  private static PCollection<KV<String, RankedPageVyshnavi>> runJob2Iteration(
+    PCollection<KV<String, RankedPageVyshnavi>> kvReducedPairs) {
+    PCollection<KV<String, RankedPageVyshnavi>> mappedKVs = kvReducedPairs.apply(ParDo.of(new Job2Mapper()));
 
     // KV{README.md, README.md, 1.00000, 0, [java.md, 1.00000,1]}
     // KV{README.md, README.md, 1.00000, 0, [go.md, 1.00000,1]}
     // KV{java.md, java.md, 1.00000, 0, [README.md, 1.00000,3]}
 
-    PCollection<KV<String, Iterable<RankedPage>>> reducedKVs = mappedKVs
-        .apply(GroupByKey.<String, RankedPage>create());
+    PCollection<KV<String, Iterable<RankedPageVyshnavi>>> reducedKVs = mappedKVs
+        .apply(GroupByKey.<String, RankedPageVyshnavi>create());
 
     // KV{java.md, [java.md, 1.00000, 0, [README.md, 1.00000,3]]}
     // KV{README.md, [README.md, 1.00000, 0, [python.md, 1.00000,1], README.md,
     // 1.00000, 0, [java.md, 1.00000,1], README.md, 1.00000, 0, [go.md, 1.00000,1]]}
 
-    PCollection<KV<String, RankedPage>> updatedOutput = reducedKVs.apply(ParDo.of(new Job2Updater()));
+    PCollection<KV<String, RankedPageVyshnavi>> updatedOutput = reducedKVs.apply(ParDo.of(new Job2Updater()));
 
     // KV{README.md, README.md, 2.70000, 0, [java.md, 1.00000,1, go.md, 1.00000,1,
     // python.md, 1.00000,1]}
@@ -190,25 +153,42 @@ public class MinimalPageRankVyshnavi {
     PCollectionList<KV<String, String>> PCollection_KV_pairs = PCollectionList.of(pcollection1).and(pcollection2).and(pcollection3).and(pcollection4);
 
     PCollection<KV<String, String>> myMergedList = PCollection_KV_pairs.apply(Flatten.<KV<String,String>>pCollections());
+      // Group by Key to get a single record for each page
+    PCollection<KV<String, Iterable<String>>> kvStringReducedPairs = myMergedList
+        .apply(GroupByKey.<String, String>create());
 
-   PCollection<KV<String, Iterable<String>>> kvReducedPairs = myMergedList.apply(GroupByKey.<String, String>create());
-
-    // Convert to a custom Value object (RankedPageKeerthiMuli) in preparation for Job 2
-    PCollection<KV<String, RankedPage>> job2in = kvReducedPairs.apply(ParDo.of(new Job1Finalizer()));
-
-    PCollection<KV<String, RankedPage>> job2out = null; 
+    // Convert to a custom Value object (RankedPage) in preparation for Job 2
+    PCollection<KV<String, RankedPageVyshnavi>> job2in = kvStringReducedPairs.apply(ParDo.of(new Job1Finalizer()));
+    PCollection<KV<String, RankedPageVyshnavi>> job2out = null; 
     int iterations = 50;
     for (int i = 1; i <= iterations; i++) {
       job2out= runJob2Iteration(job2in);
       job2in =job2out;
     }
-    // Transform KV to Strings
-   PCollection<String> mergeString = job2out.apply(
+    PCollection<String> PCollectionLinksString = job2out.apply(
         MapElements.into(
             TypeDescriptors.strings())
-            .via((kvInput) -> kvInput.toString()));
-           mergeString.apply(TextIO.write().to("VyshnaviPR"));
+            .via((myMergeLstout) -> myMergeLstout.toString()));
+           PCollectionLinksString.apply(TextIO.write().to("VyshnaviPR"));
 
     p.run().waitUntilFinish();
   }
+   private static PCollection<KV<String, String>> vyshnaviMapper1(Pipeline p, String dataFile, String dataFolder) {
+    String dataPath = dataFolder + "/" + dataFile;
+    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
+    PCollection<String> pcolLines  = pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
+    PCollection<String> pcColInputEmptyLines = pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
+    PCollection<String> pcolInputLinkLines = pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
+   
+    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
+            MapElements.into(TypeDescriptors.strings())
+                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
+
+                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
+                  MapElements.into(  
+                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
+                      .via (linkline ->  KV.of(dataFile , linkline) ));
+        return pcollectionkvLinks;
+  }
 }
+

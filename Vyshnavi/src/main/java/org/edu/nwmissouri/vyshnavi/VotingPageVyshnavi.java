@@ -1,7 +1,7 @@
 package org.edu.nwmissouri.vyshnavi;
 import java.io.Serializable;
 
-public class VotingPage implements Serializable{
+public class VotingPageVyshnavi implements Serializable{
     String name = "unknown.md";
     Double rank = 1.0;
     Integer votes = 0;
@@ -11,7 +11,7 @@ public class VotingPage implements Serializable{
      * @param nameIn - name of contributing page
      * @param votesIn - Count of votes made by contributing page
      */
-    public VotingPage(String nameIn, Integer votesIn) {
+    public VotingPageVyshnavi(String nameIn, Integer votesIn) {
         this.name = nameIn;
         this.votes = votesIn;
     }
@@ -21,7 +21,7 @@ public class VotingPage implements Serializable{
      * @param rankIn - rank of contributor page
      * @param votesIn - Count of votes made by contributing page
      */
-    public VotingPage(String nameIn,Double rankIn, Integer votesIn) {
+    public VotingPageVyshnavi(String nameIn,Double rankIn, Integer votesIn) {
         this.name = nameIn;
         this.rank = rankIn;
         this.votes = votesIn;
