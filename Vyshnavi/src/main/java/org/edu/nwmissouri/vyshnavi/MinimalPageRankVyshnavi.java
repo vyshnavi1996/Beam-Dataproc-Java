@@ -55,7 +55,7 @@ public class MinimalPageRankVyshnavi {
       receiver.output(KV.of(element.getKey(), new RankedPageVyshnavi(element.getKey(), voters)));
     }
   }
-<<<<<<< HEAD
+
   // JOB2 Mapper
   static class Job2Mapper extends DoFn<KV<String,RankedPageVyshnavi >, KV<String, RankedPageVyshnavi>> {
   @ProcessElement
@@ -138,7 +138,7 @@ public class MinimalPageRankVyshnavi {
     // KV{python.md, python.md, 0.43333, 0, [README.md, 1.00000,3]}
     return updatedOutput;
   }
-=======
+
 
    // Map to KV pairs
   private static PCollection<KV<String, String>> vyshnaviMapper1(Pipeline p, String dataFile, String dataFolder) {
@@ -161,7 +161,6 @@ public class MinimalPageRankVyshnavi {
     return pcollectionkvLinks;
   }
 
->>>>>>> 8fcc08736244dffea0395fd136ee3b61cb372347
   public static void main(String[] args) {
 
     PipelineOptions options = PipelineOptionsFactory.create();
@@ -178,7 +177,7 @@ public class MinimalPageRankVyshnavi {
     PCollectionList<KV<String, String>> PCollection_KV_pairs = PCollectionList.of(pcollection1).and(pcollection2).and(pcollection3).and(pcollection4);
 
     PCollection<KV<String, String>> myMergedList = PCollection_KV_pairs.apply(Flatten.<KV<String,String>>pCollections());
-<<<<<<< HEAD
+
       // Group by Key to get a single record for each page
     PCollection<KV<String, Iterable<String>>> kvStringReducedPairs = myMergedList
         .apply(GroupByKey.<String, String>create());
@@ -192,10 +191,9 @@ public class MinimalPageRankVyshnavi {
       job2in =job2out;
     }
     PCollection<String> PCollectionLinksString = job2out.apply(
-=======
-    // Transform KV to Strings
+// Transform KV to Strings
    PCollection<String> mergeString = job2out.apply(
->>>>>>> 8fcc08736244dffea0395fd136ee3b61cb372347
+
         MapElements.into(
             TypeDescriptors.strings())
             .via((myMergeLstout) -> myMergeLstout.toString()));
