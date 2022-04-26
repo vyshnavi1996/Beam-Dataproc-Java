@@ -138,29 +138,6 @@ public class MinimalPageRankVyshnavi {
     // KV{python.md, python.md, 0.43333, 0, [README.md, 1.00000,3]}
     return updatedOutput;
   }
-
-
-   // Map to KV pairs
-  private static PCollection<KV<String, String>> vyshnaviMapper1(Pipeline p, String dataFile, String dataFolder) {
-    String dataPath = dataFolder + "/" + dataFile;
-    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
-    PCollection<String> pcolLines  =pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
-    PCollection<String> pcColInputEmptyLines=pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
-    PCollection<String> pcolInputLinkLines=pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
-   
-    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
-            MapElements.into(TypeDescriptors.strings())
-                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
-
-                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
-                  MapElements.into(  
-                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
-                      .via (linkline ->  KV.of(dataFile , linkline) ));
-     
-                   
-    return pcollectionkvLinks;
-  }
-
   public static void main(String[] args) {
 
     PipelineOptions options = PipelineOptionsFactory.create();
