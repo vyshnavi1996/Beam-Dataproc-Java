@@ -26,14 +26,14 @@ PS> dir .\src\main\java\org\apache\beam\examples
 
 -------------------
 
-PS> mvn compile exec:java -D exec.mainClass=org.apache.beam.examples.WordCount `
- -D exec.args="--inputFile=sample.txt --output=counts" -P direct-runner
+Command to run the Minimal Page Rank
 
- ----------------------
+mvn compile exec:java -D exec.mainClass=edu.nwmissouri.bigdatapy.manoj.MinimalPageRanknuvvala
 
-ls counts*
+###Links:
 
- ---------------
-
-more counts*
-
+ [WIKI](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Manoj-Nuvvala)
+ 
+ [ISSUES](https://github.com/vyshnavi1996/Beam-Dataproc-Java/issues)
+ 
+ [Minimal Page Rank](https://github.com/vyshnavi1996/Beam-Dataproc-Java/blob/main/Manoj/src/main/java/org/apache/beam/examples/MinimalPageRanknuvvala.java)

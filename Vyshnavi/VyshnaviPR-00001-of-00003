@@ -1,2 +1,2 @@
-KV{python.md, README.md}
-KV{README.md, python.md}
+KV{README.md, ThisPageName = README.md, ThisPageRank = 1.9186471351738856 ArrayListOfPages = [ContributorPageName = java.md, ContributorPageRank = 0.6935871118328963 CountOfVotes = 1, ContributorPageName = python.md, ContributorPageRank = 0.6935871118328963 CountOfVotes = 1, ContributorPageName = go.md, ContributorPageRank = 0.6935871118328963 CountOfVotes = 1]}
+KV{java.md, ThisPageName = java.md, ThisPageRank = 0.6937842882753715 ArrayListOfPages = [ContributorPageName = README.md, ContributorPageRank = 1.9192386645013113 CountOfVotes = 3]}
