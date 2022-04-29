@@ -17,182 +17,222 @@
  */
 package org.apache.beam.giridhar;
 
-// beam-playground:
-//   name: MinimalWordCount
-//   description: An example that counts words in Shakespeare's works.
-//   multifile: false
-//   pipeline_options:
-//   categories:
-//     - Combiners
-//     - Filtering
-//     - IO
-//     - Core Transforms
-
-import java.util.Arrays;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.Count;
+import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.Filter;
-import org.apache.beam.sdk.transforms.FlatMapElements;
 import org.apache.beam.sdk.transforms.Flatten;
+import org.apache.beam.sdk.transforms.GroupByKey;
 import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
-import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.sdk.values.TypeDescriptors;
 
-/**
- * An example that counts words in Shakespeare.
- *
- * <p>
- * This class, {@link MinimalWordCount}, is the first in a series of four
- * successively more
- * detailed 'word count' examples. Here, for simplicity, we don't show any
- * error-checking or
- * argument processing, and focus on construction of the pipeline, which chains
- * together the
- * application of core transforms.
- *
- * <p>
- * Next, see the {@link WordCount} pipeline, then the
- * {@link DebuggingWordCount}, and finally the
- * {@link WindowedWordCount} pipeline, for more detailed examples that introduce
- * additional
- * concepts.
- *
- * <p>
- * Concepts:
- *
- * <pre>
- *   1. Reading data from text files
- *   2. Specifying 'inline' transforms
- *   3. Counting items in a PCollection
- *   4. Writing data to text files
- * </pre>
- *
- * <p>
- * No arguments are required to run this pipeline. It will be executed with the
- * DirectRunner. You
- * can see the results in the output files in your current working directory,
- * with names like
- * "wordcounts-00001-of-00005. When running on a distributed service, you would
- * use an appropriate
- * file service.
- */
+
+
 public class MinimalPageRankAddagalla {
+   // DEFINE DOFNS
+  // ==================================================================
+  // You can make your pipeline assembly code less verbose by defining
+  // your DoFns statically out-of-line.
+  // Each DoFn<InputT, OutputT> takes previous output
+  // as input of type InputT
+  // and transforms it to OutputT.
+  // We pass this DoFn to a ParDo in our pipeline.
 
-  public static void main(String[] args) {
-
-    // Create a PipelineOptions object. This object lets us set various execution
-    // options for our pipeline, such as the runner you wish to use. This example
-    // will run with the DirectRunner by default, based on the class path configured
-    // in its dependencies.
-    PipelineOptions options = PipelineOptionsFactory.create();
-
-    // In order to run your pipeline, you need to make following runner specific
-    // changes:
-    //
-    // CHANGE 1/3: Select a Beam runner, such as BlockingDataflowRunner
-    // or FlinkRunner.
-    // CHANGE 2/3: Specify runner-required options.
-    // For BlockingDataflowRunner, set project and temp location as follows:
-    // DataflowPipelineOptions dataflowOptions =
-    // options.as(DataflowPipelineOptions.class);
-    // dataflowOptions.setRunner(BlockingDataflowRunner.class);
-    // dataflowOptions.setProject("SET_YOUR_PROJECT_ID_HERE");
-    // dataflowOptions.setTempLocation("gs://SET_YOUR_BUCKET_NAME_HERE/AND_TEMP_DIRECTORY");
-    // For FlinkRunner, set the runner as follows. See {@code FlinkPipelineOptions}
-    // for more details.
-    // options.as(FlinkPipelineOptions.class)
-    // .setRunner(FlinkRunner.class);
-
-    // Create the Pipeline object with the options we defined above
-    Pipeline p = Pipeline.create(options);
-
-    // Concept #1: Apply a root transform to the pipeline; in this case, TextIO.Read
-    // to read a set
-    // of input text files. TextIO.Read returns a PCollection where each element is
-    // one line from
-    // the input text (a set of Shakespeare's texts).
-
-    // This example reads from a public dataset containing the text of King Lear.
-    String datafolder = "web04";
-    // This example reads from a public dataset containing the text of King Lear.
-    // .apply(Filter.by((String line) -> !line.isEmpty()))
-    // .apply(Filter.by((String line) -> !line.equals(" ")))
-    PCollection<KV<String, String>> pcollection_kv_1 = GiridharMapper01(p, "go.md", datafolder);
-    PCollection<KV<String, String>> pcollection_kv_2 = GiridharMapper01(p, "java.md", datafolder);
-    PCollection<KV<String, String>> pcollection_kv_3 = GiridharMapper01(p, "python.md", datafolder);
-    PCollection<KV<String, String>> pcollection_kv_4 = GiridharMapper01(p, "README.md", datafolder);
-    PCollectionList<KV<String, String>> PCollection_KV_pairs = PCollectionList.of(pcollection_kv_1)
-        .and(pcollection_kv_2).and(pcollection_kv_3).and(pcollection_kv_4);
-
-    PCollection<KV<String, String>> myMergedList = PCollection_KV_pairs
-        .apply(Flatten.<KV<String, String>>pCollections());
-
-    PCollection<String> PCollectionLinksString = myMergedList.apply(
-        MapElements.into(
-            TypeDescriptors.strings())
-            .via((myMergeLstout) -> myMergeLstout.toString()));
-
-    // Concept #2: Apply a FlatMapElements transform the PCollection of text lines.
-    // This transform splits the lines in PCollection<String>, where each element is
-    // an
-    // individual word in Shakespeare's collected texts.
-    // .apply(
-    // FlatMapElements.into(TypeDescriptors.strings())
-    // .via((String line) -> Arrays.asList(line.split("[^\\p{L}]+"))))
-    // // We use a Filter transform to avoid empty word
-    // .apply(Filter.by((String word) -> !word.isEmpty()))
-    // Concept #3: Apply the Count transform to our PCollection of individual words.
-    // The Count
-    // transform returns a new PCollection of key/value pairs, where each key
-    // represents a
-    // unique word in the text. The associated value is the occurrence count for
-    // that word.
-    // .apply(Count.perElement())
-    // Apply a MapElements transform that formats our PCollection of word counts
-    // into a
-    // printable string, suitable for writing to an output file.
-    // .apply(
-    // MapElements.into(TypeDescriptors.strings())
-    // .via(
-    // (KV<String, Long> wordCount) ->
-    // wordCount.getKey() + ": " + wordCount.getValue()))
-    // Concept #4: Apply a write transform, TextIO.Write, at the end of the
-    // pipeline.
-    // TextIO.Write writes the contents of a PCollection (in this case, our
-    // PCollection of
-    // formatted strings) to a series of text files.
-    //
-    // By default, it will write to a set of files with names like
-    // wordcounts-00001-of-00005
-    PCollectionLinksString.apply(TextIO.write().to("GiridharOutput"));
-
-    p.run().waitUntilFinish();
+  /**
+   * DoFn Job1Finalizer takes KV(String, String List of outlinks) and transforms
+   * the value into our custom RankedPage Value holding the page's rank and list
+   * of voters.
+   * 
+   * The output of the Job1 Finalizer creates the initial input into our
+   * iterative Job 2.
+   */
+  static class Job1Finalizer extends DoFn<KV<String, Iterable<String>>, KV<String, RankedPageAddagalla>> {
+    @ProcessElement
+    public void processElement(@Element KV<String, Iterable<String>> element,
+        OutputReceiver<KV<String, RankedPageAddagalla>> receiver) {
+      Integer contributorVotes = 0;
+      if (element.getValue() instanceof Collection) {
+        contributorVotes = ((Collection<String>) element.getValue()).size();
+      }
+      ArrayList<VotingPageAddagalla> voters = new ArrayList<VotingPageAddagalla>();
+      for (String voterName : element.getValue()) {
+        if (!voterName.isEmpty()) {
+          voters.add(new VotingPageAddagalla(voterName, contributorVotes));
+        }
+      }
+      receiver.output(KV.of(element.getKey(), new RankedPageAddagalla(element.getKey(), voters)));
+    }
   }
 
-  private static PCollection<KV<String, String>> GiridharMapper01(Pipeline p, String dataFile, String dataFolder) {
+  // JOB2 Mapper
+  static class Job2Mapper extends DoFn<KV<String,RankedPageAddagalla >, KV<String, RankedPageAddagalla>> {
+  @ProcessElement
+  public void processElement(@Element KV<String, RankedPageAddagalla> element,
+      OutputReceiver<KV<String, RankedPageAddagalla>> receiver) {
+
+    Integer votes = 0;
+     
+      ArrayList<VotingPageAddagalla> voters =  element.getValue().getVoters();
+
+      if ( voters instanceof Collection){
+
+    votes =((Collection<VotingPageAddagalla>)voters).size();
+
+    }
+    for (VotingPageAddagalla vp: voters){
+      String pageName = vp.getName();
+      Double pageRank = vp.getRank();
+      String contributorPageName= element.getKey();
+      Double contributorPageRank= element.getValue().getRank();
+      VotingPageAddagalla contributor = new VotingPageAddagalla(contributorPageName,contributorPageRank,votes);
+      ArrayList<VotingPageAddagalla> arr = new ArrayList<VotingPageAddagalla>();
+      arr.add(contributor);
+      receiver.output(KV.of(vp.getName(), new RankedPageAddagalla(pageName,pageRank,arr)));
+    }
+  }
+  }
+  // JOB2 UPDATER
+  static class Job2Updater extends DoFn<KV<String, Iterable<RankedPageAddagalla>>, KV<String, RankedPageAddagalla>> {
+  @ProcessElement
+  public void processElement(@Element KV<String, Iterable<RankedPageAddagalla>> element,
+      OutputReceiver<KV<String, RankedPageAddagalla>> receiver) {
+    
+        String thisPage = element.getKey();
+        Iterable<RankedPageAddagalla> rankedPage = element.getValue();
+        Double dampfactor = 0.85;
+        Double updateRank = (1.0 -dampfactor);
+        ArrayList<VotingPageAddagalla> newVoters = new ArrayList<VotingPageAddagalla>();
+
+      for (RankedPageAddagalla pg:rankedPage) {
+      if (pg!=null) {
+        for(VotingPageAddagalla vp :pg.getVoters()){
+          newVoters.add(vp);
+          updateRank +=(dampfactor)*vp.getRank()/(double)vp.getVotes();
+        }
+      }
+    }
+    receiver.output(KV.of(thisPage, new RankedPageAddagalla(thisPage,updateRank,newVoters)));
+  } 
+}  
+/**
+   * Run one iteration of the Job 2 Map-Reduce process
+   * Notice how the Input Type to Job 2.
+   * Matches the Output Type from Job 2.
+   * How important is that for an iterative process?
+   * 
+   * @param kvReducedPairs - takes a PCollection<KV<String, RankedPage>> with
+   *                       initial ranks.
+   * @return - returns a PCollection<KV<String, RankedPage>> with updated ranks.
+   */
+  private static PCollection<KV<String, RankedPageAddagalla>> runJob2Iteration(
+    PCollection<KV<String, RankedPageAddagalla>> kvReducedPairs) {
+    PCollection<KV<String, RankedPageAddagalla>> mappedKVs = kvReducedPairs.apply(ParDo.of(new Job2Mapper()));
+
+    // KV{README.md, README.md, 1.00000, 0, [java.md, 1.00000,1]}
+    // KV{README.md, README.md, 1.00000, 0, [go.md, 1.00000,1]}
+    // KV{java.md, java.md, 1.00000, 0, [README.md, 1.00000,3]}
+
+    PCollection<KV<String, Iterable<RankedPageAddagalla>>> reducedKVs = mappedKVs
+        .apply(GroupByKey.<String, RankedPageAddagalla>create());
+
+    // KV{java.md, [java.md, 1.00000, 0, [README.md, 1.00000,3]]}
+    // KV{README.md, [README.md, 1.00000, 0, [python.md, 1.00000,1], README.md,
+    // 1.00000, 0, [java.md, 1.00000,1], README.md, 1.00000, 0, [go.md, 1.00000,1]]}
+
+    PCollection<KV<String, RankedPageAddagalla>> updatedOutput = reducedKVs.apply(ParDo.of(new Job2Updater()));
+
+    // KV{README.md, README.md, 2.70000, 0, [java.md, 1.00000,1, go.md, 1.00000,1,
+    // python.md, 1.00000,1]}
+    // KV{python.md, python.md, 0.43333, 0, [README.md, 1.00000,3]}
+    return updatedOutput;
+  }
+
+
+   // Map to KV pairs
+  private static PCollection<KV<String, String>> Mapper1(Pipeline p, String dataFile, String dataFolder) {
     String dataPath = dataFolder + "/" + dataFile;
-    PCollection<String> pcolInputLines = p.apply(TextIO.read().from(dataPath));
-    PCollection<String> pcolLines = pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
-    PCollection<String> pcColInputEmptyLines = pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
-    PCollection<String> pcolInputLinkLines = pcColInputEmptyLines
-        .apply(Filter.by((String line) -> line.startsWith("[")));
+    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
+    PCollection<String> pcolLines  =pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
+    PCollection<String> pcColInputEmptyLines=pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
+    PCollection<String> pcolInputLinkLines=pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
+   
+    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
+            MapElements.into(TypeDescriptors.strings())
+                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
 
-    PCollection<String> pcolInputLinks = pcolInputLinkLines.apply(
-        MapElements.into(TypeDescriptors.strings())
-            .via((String linkline) -> linkline.substring(linkline.indexOf("(") + 1, linkline.indexOf(")"))));
-
-    PCollection<KV<String, String>> pcollectionkvLinks = pcolInputLinks.apply(
-        MapElements.into(
-            TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
-            .via(linkline -> KV.of(dataFile, linkline)));
-
+                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
+                  MapElements.into(  
+                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
+                      .via (linkline ->  KV.of(dataFile , linkline) ));
+     
+                   
     return pcollectionkvLinks;
   }
 
+  public static void main(String[] args) {
+
+    PipelineOptions options = PipelineOptionsFactory.create();
+    Pipeline p = Pipeline.create(options);
+
+    String folder="web04";
+
+      // .apply(Filter.by((String line) -> !line.isEmpty()))    
+      // .apply(Filter.by((String line) -> !line.equals(" ")))
+    PCollection<KV<String, String>> pcollection1 = AddagallaMapper1(p,"go.md",folder);
+    PCollection<KV<String, String>> pcollection2 = AddagallaMapper1(p,"java.md",folder);
+    PCollection<KV<String, String>> pcollection3 = AddagallaMapper1(p,"python.md",folder);
+    PCollection<KV<String, String>> pcollection4 = AddagallaMapper1(p,"README.md",folder);
+    PCollectionList<KV<String, String>> PCollection_KV_pairs = PCollectionList.of(pcollection1).and(pcollection2).and(pcollection3).and(pcollection4);
+
+    PCollection<KV<String, String>> myMergedList = PCollection_KV_pairs.apply(Flatten.<KV<String,String>>pCollections());
+
+      // Group by Key to get a single record for each page
+    PCollection<KV<String, Iterable<String>>> kvStringReducedPairs = myMergedList
+        .apply(GroupByKey.<String, String>create());
+
+    // Convert to a custom Value object (RankedPage) in preparation for Job 2
+    PCollection<KV<String, RankedPageAddagalla>> job2in = kvStringReducedPairs.apply(ParDo.of(new Job1Finalizer()));
+    PCollection<KV<String, RankedPageAddagalla>> job2out = null; 
+    int iterations = 50;
+    for (int i = 1; i <= iterations; i++) {
+      job2out= runJob2Iteration(job2in);
+      job2in =job2out;
+    }
+    PCollection<String> PCollectionLinksString = job2out.apply(
+// Transform KV to Strings
+   PCollection<String> mergeString = job2out.apply(
+
+        MapElements.into(
+            TypeDescriptors.strings())
+            .via((myMergeLstout) -> myMergeLstout.toString()));
+           PCollectionLinksString.apply(TextIO.write().to("AddagallaPR"));
+
+    p.run().waitUntilFinish();
+  }
+   private static PCollection<KV<String, String>> AddagallaMapper1(Pipeline p, String dataFile, String dataFolder) {
+    String dataPath = dataFolder + "/" + dataFile;
+    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
+    PCollection<String> pcolLines  = pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
+    PCollection<String> pcColInputEmptyLines = pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
+    PCollection<String> pcolInputLinkLines = pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
+   
+    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
+            MapElements.into(TypeDescriptors.strings())
+                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
+
+                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
+                  MapElements.into(  
+                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
+                      .via (linkline ->  KV.of(dataFile , linkline) ));
+        return pcollectionkvLinks;
+  }
 }
