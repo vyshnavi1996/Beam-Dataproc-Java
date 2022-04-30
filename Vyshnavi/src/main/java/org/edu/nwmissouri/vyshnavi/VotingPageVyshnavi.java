@@ -5,7 +5,8 @@ public class VotingPageVyshnavi implements Serializable{
     String name = "unknown.md";
     Double rank = 1.0;
     Integer votes = 0;
-
+    public VotingPageVyshnavi() {
+    }
     /**
      * 
      * @param nameIn - name of contributing page

@@ -1,6 +1,7 @@
 org\edu\nwmissouri\vyshnavi\MinimalPageRankVyshnavi.class
 org\edu\nwmissouri\vyshnavi\RankedPageVyshnavi.class
 org\edu\nwmissouri\vyshnavi\VotingPageVyshnavi.class
-org\edu\nwmissouri\vyshnavi\MinimalPageRankVyshnavi$Job1Finalizer.class
 org\edu\nwmissouri\vyshnavi\MinimalPageRankVyshnavi$Job2Updater.class
 org\edu\nwmissouri\vyshnavi\MinimalPageRankVyshnavi$Job2Mapper.class
+org\edu\nwmissouri\vyshnavi\MinimalPageRankVyshnavi$Job3Finalizer.class
+org\edu\nwmissouri\vyshnavi\MinimalPageRankVyshnavi$Job1Finalizer.class

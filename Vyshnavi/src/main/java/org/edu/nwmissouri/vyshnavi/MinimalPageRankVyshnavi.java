@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -12,6 +13,7 @@ import org.apache.beam.sdk.transforms.Filter;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.GroupByKey;
 import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.Max;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
@@ -138,6 +140,26 @@ public class MinimalPageRankVyshnavi {
     // KV{python.md, python.md, 0.43333, 0, [README.md, 1.00000,3]}
     return updatedOutput;
   }
+
+  // JOB3 FINALIZER
+static class Job3Finalizer extends DoFn<KV<String, RankedPageVyshnavi>, KV<Double, String>> {
+  @ProcessElement
+  public void processElement(@Element KV<String, RankedPageVyshnavi> element,
+      OutputReceiver<KV<Double, String>> receiver) {
+    receiver.output(KV.of(element.getValue().getRank(), element.getKey()));
+  }
+}
+
+// HELPER FUNCTIONS
+public static  void deleteFiles(){
+  final File file = new File("./");
+  for (File f : file.listFiles()){
+   if(f.getName().startsWith("Vyshnavi_FinalOutput")){
+  f.delete();
+  }
+  }
+ }
+
   public static void main(String[] args) {
 
     PipelineOptions options = PipelineOptionsFactory.create();
@@ -167,14 +189,14 @@ public class MinimalPageRankVyshnavi {
       job2out= runJob2Iteration(job2in);
       job2in =job2out;
     }
-    PCollection<String> PCollectionLinksString = job2out.apply(
-// Transform KV to Strings
-   PCollection<String> mergeString = job2out.apply(
-
+   PCollection<KV<Double, String>> job3out = job2out.apply(ParDo.of(new Job3Finalizer()));
+    PCollection<KV<Double, String>> finalPageRank = job3out.apply(Combine.globally(Max.of(new RankedPageVyshnavi())));
+    // Transform KV to Strings
+     PCollection<String> mergeString = finalPageRank.apply(
         MapElements.into(
             TypeDescriptors.strings())
-            .via((myMergeLstout) -> myMergeLstout.toString()));
-           PCollectionLinksString.apply(TextIO.write().to("VyshnaviPR"));
+            .via((kvInput) -> kvInput.toString()));
+    mergeString.apply(TextIO.write().to("Vyshnavi_FinalOutput"));
 
     p.run().waitUntilFinish();
   }
