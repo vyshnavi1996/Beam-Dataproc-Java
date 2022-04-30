@@ -2,6 +2,12 @@
 
 ## Commands I used for this project : 
 
+### checking java version 
+      java --version
+      
+ ### checking maven version
+      mvn --version
+
 ### Creeating a project.
        mvn archetype:generate `
          -D archetypeGroupId=org.apache.beam `
