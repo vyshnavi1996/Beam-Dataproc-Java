@@ -28,4 +28,4 @@
   ### Links : 
 - [Link to my Wiki page](https://github.com/vyshnavi1996/Beam-Dataproc-Java/wiki/Vyshnavi-Tadipaneni)
 - [Link to  my folder](https://github.com/vyshnavi1996/Beam-Dataproc-Java/tree/main/Vyshnavi)
-- [Link to commits](https://github.com/vyshnavi1996/Beam-Dataproc-Java/commits/main)
+- [Link to commits](https://github.com/vyshnavi1996/Beam-Dataproc-Java/commits/main/Vyshnavi)
