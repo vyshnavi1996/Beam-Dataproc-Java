@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 package org.apache.beam.giridhar;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -29,6 +29,7 @@ import org.apache.beam.sdk.transforms.Filter;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.GroupByKey;
 import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.Max;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
@@ -156,27 +157,24 @@ public class MinimalPageRankAddagalla {
     return updatedOutput;
   }
 
-
-   // Map to KV pairs
-  private static PCollection<KV<String, String>> Mapper1(Pipeline p, String dataFile, String dataFolder) {
-    String dataPath = dataFolder + "/" + dataFile;
-    PCollection<String> pcolInputLines =  p.apply(TextIO.read().from(dataPath));
-    PCollection<String> pcolLines  =pcolInputLines.apply(Filter.by((String line) -> !line.isEmpty()));
-    PCollection<String> pcColInputEmptyLines=pcolLines.apply(Filter.by((String line) -> !line.equals(" ")));
-    PCollection<String> pcolInputLinkLines=pcColInputEmptyLines.apply(Filter.by((String line) -> line.startsWith("[")));
-   
-    PCollection<String> pcolInputLinks=pcolInputLinkLines.apply(
-            MapElements.into(TypeDescriptors.strings())
-                .via((String linkline) -> linkline.substring(linkline.indexOf("(")+1,linkline.indexOf(")")) ));
-
-                PCollection<KV<String, String>> pcollectionkvLinks=pcolInputLinks.apply(
-                  MapElements.into(  
-                    TypeDescriptors.kvs(TypeDescriptors.strings(), TypeDescriptors.strings()))
-                      .via (linkline ->  KV.of(dataFile , linkline) ));
-     
-                   
-    return pcollectionkvLinks;
+  // JOB3 FINALIZER
+static class Job3Finalizer extends DoFn<KV<String, RankedPageAddagalla>, KV<Double, String>> {
+  @ProcessElement
+  public void processElement(@Element KV<String, RankedPageAddagalla> element,
+      OutputReceiver<KV<Double, String>> receiver) {
+    receiver.output(KV.of(element.getValue().getRank(), element.getKey()));
   }
+}
+
+// HELPER FUNCTIONS
+public static  void deleteFiles(){
+  final File file = new File("./");
+  for (File f : file.listFiles()){
+   if(f.getName().startsWith("Addagalla_FinalOutput")){
+  f.delete();
+  }
+  }
+ }
 
   public static void main(String[] args) {
 
@@ -202,19 +200,19 @@ public class MinimalPageRankAddagalla {
     // Convert to a custom Value object (RankedPage) in preparation for Job 2
     PCollection<KV<String, RankedPageAddagalla>> job2in = kvStringReducedPairs.apply(ParDo.of(new Job1Finalizer()));
     PCollection<KV<String, RankedPageAddagalla>> job2out = null; 
-    int iterations = 50;
+    int iterations = 20;
     for (int i = 1; i <= iterations; i++) {
       job2out= runJob2Iteration(job2in);
       job2in =job2out;
     }
-    PCollection<String> PCollectionLinksString = job2out.apply(
-// Transform KV to Strings
-   PCollection<String> mergeString = job2out.apply(
-
+   PCollection<KV<Double, String>> job3out = job2out.apply(ParDo.of(new Job3Finalizer()));
+    PCollection<KV<Double, String>> finalPageRank = job3out.apply(Combine.globally(Max.of(new RankedPageAddagalla())));
+    // Transform KV to Strings
+     PCollection<String> mergeString = finalPageRank.apply(
         MapElements.into(
             TypeDescriptors.strings())
-            .via((myMergeLstout) -> myMergeLstout.toString()));
-           PCollectionLinksString.apply(TextIO.write().to("AddagallaPR"));
+            .via((kvInput) -> kvInput.toString()));
+    mergeString.apply(TextIO.write().to("Addagalla_FinalOutput"));
 
     p.run().waitUntilFinish();
   }

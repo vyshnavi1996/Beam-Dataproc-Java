@@ -6,7 +6,8 @@ public class VotingPageAddagalla implements Serializable{
     String name = "unknown.md";
     Double rank = 1.0;
     Integer votes = 0;
-
+    public VotingPageAddagalla() {
+    }
     /**
      * 
      * @param nameIn - name of contributing page
@@ -41,4 +42,4 @@ public class VotingPageAddagalla implements Serializable{
 public String toString(){
     return ("ContributorPageName = "+ name +", ContributorPageRank = "+this.rank +" CountOfVotes = " + this.votes);
 }
-}
+}  
